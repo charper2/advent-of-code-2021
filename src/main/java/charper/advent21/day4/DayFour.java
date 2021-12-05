@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,11 +33,46 @@ public class DayFour {
                     allCards.add(numbers);
                 }
             }
-            System.out.println(playBingo(ballsDrawn, allCards));
+            // System.out.println(playBingo(ballsDrawn, allCards));
+            System.out.println(playLoserBingo(ballsDrawn, allCards));
         }
         catch (IOException e) {
             System.out.println("Oops Exception");
         }
+    }
+
+    private Integer playLoserBingo(List<String> balls, List<List<String>> cards) {
+        for (String ball: balls) {
+            Set<Integer> toRemove = cardsWithBingo(cards, ball);
+            if (cards.size() == CARD_SIZE && toRemove.size() > 0) {
+                return calculateScore(cards, ball, 0);
+            }
+            // delete highest y first so we don't have to shift future y values
+            for (int y : toRemove) {
+                for (int i = CARD_SIZE - 1; i >= 0; i--) {
+                    cards.remove(y + i);
+                }
+            }
+            
+        }
+        return null;
+    }
+
+    private Set<Integer> cardsWithBingo(List<List<String>> cards, String ball) {
+        Set<Integer> toRemove = new TreeSet<>(Collections.reverseOrder());
+        for (int y = 0; y < cards.size(); y++) {
+            for (int x = 0; x < cards.get(0).size(); x++) {
+                if (cards.get(y).get(x).equals(ball)) {
+                    cards.get(y).set(x, MATCHED);
+                    if (checkForBingo(cards, x, y)) {
+                        // delete card if bingo
+                        int startY = y - (y % CARD_SIZE);
+                        toRemove.add(startY);
+                    }
+                }
+            }
+        }
+        return toRemove;
     }
 
     private Integer playBingo(List<String> balls, List<List<String>> cards) {
@@ -49,12 +87,12 @@ public class DayFour {
 
     // return score or null
     private Integer searchAndMark(List<List<String>> cards, String ball) {
-        for (int i = 0; i < cards.size(); i++) {
-            for (int j = 0; j < cards.get(0).size(); j++) {
-                if (cards.get(i).get(j).equals(ball)) {
-                    cards.get(i).set(j, MATCHED);
-                    if (checkForBingo(cards, j, i)) {
-                        return calculateScore(cards, ball, j, i);
+        for (int y = 0; y < cards.size(); y++) {
+            for (int x = 0; x < cards.get(0).size(); x++) {
+                if (cards.get(y).get(x).equals(ball)) {
+                    cards.get(y).set(x, MATCHED);
+                    if (checkForBingo(cards, x, y)) {
+                        return calculateScore(cards, ball, y);
                     }
                 }
             }
@@ -62,7 +100,7 @@ public class DayFour {
         return null;
     }
 
-    private int calculateScore(List<List<String>> cards, String ball, int xMatch, int yMatch) {
+    private int calculateScore(List<List<String>> cards, String ball, int yMatch) {
         int startY = yMatch - (yMatch % CARD_SIZE);
         int totalNotMatched = 0;
         for (int y = startY; y < startY + CARD_SIZE; y++) {
