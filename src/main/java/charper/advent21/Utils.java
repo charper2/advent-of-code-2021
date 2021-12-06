@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -152,5 +154,54 @@ public class Utils {
             System.out.println("oops no file here...");
         }
         return charMap;
+    }
+
+    public static <T> List<T> deepCopy(List<T> original) {
+        List<T> clone = new ArrayList<>();
+        Iterator<T> iterator = original.iterator();
+        while (iterator.hasNext()) {
+            clone.add(iterator.next());  // iterator.next is not doing a deep clone so won't work for objects/collections
+        }
+        return clone;
+    }
+
+    public static class Point {
+        private int x;
+        private int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Point) {
+                Point point = (Point) obj;
+                return point.getX() == x && point.getY() == y;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
     }
 }
