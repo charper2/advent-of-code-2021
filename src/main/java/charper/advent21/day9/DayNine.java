@@ -57,6 +57,7 @@ public class DayNine {
                 Point testPoint = new Point(i, j);
                 if (depths.get(j).get(i) != HIGH_POINT) {
                     if (!visited.contains(testPoint)) {
+                        // could probs fix this to be tail recursive if i pass in the current basinSize
                         basinSize += findBasinSize(depths, visited, testPoint);
                     }
                 }
