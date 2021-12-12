@@ -5,10 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,51 +29,61 @@ public class DayTen {
         put('}', 1197);
         put('>', 25137);
     }};
-    private static final Set<Character> CLOSING_BRACKETS = BRACKET_MAP.keySet();
+    private static final Map<Character, Integer> PART_2_VALUES_MAP = new HashMap<>() {{
+        put('(', 1);
+        put('[', 2);
+        put('{', 3);
+        put('<', 4);
+    }};
     private static final Set<Character> OPENING_BRACKETS = BRACKET_MAP.values().stream().collect(Collectors.toSet());
 
+    private int partOneTotal = 0;
+    private List<Long> partTwoTotals = new ArrayList<>();
 
     public DayTen() {
         Path path = Paths.get(FILE_PATH);
-        System.out.println(partOne(path));
-        System.out.println(partTwo(path));
+        bothParts(path);
     }
 
-    private int partTwo(Path path) {
-        return 1;
-    }
-
-    private int partOne(Path path) {
+    private void bothParts(Path path) {
         try (Stream<String> lines = Files.lines(path)) {
             List<List<Character>> corrupted = lines
                 .map(this::convertToChars)
                 .collect(Collectors.toList());
-            int total = 0;
             for (List<Character> line: corrupted) {
-                total += findCorruptedValue(line);
+                findCorruptedValue(line);
             }
-            return total;
+            System.out.println(partOneTotal);
+            Collections.sort(partTwoTotals);
+            int middle = (int)Math.floor(partTwoTotals.size() / 2.0);
+            System.out.println(partTwoTotals.get(middle));
         } catch (IOException exception) {
             System.out.println("Oops");
             throw new RuntimeException("Should not be here!");
         }
     }
 
-    private int findCorruptedValue(List<Character> corruptedLine) {
+    private void findCorruptedValue(List<Character> corruptedLine) {
         Deque<Character> stack = new ArrayDeque<>();
         for (Character bracket: corruptedLine) {
             if (OPENING_BRACKETS.contains(bracket)) {
                 stack.push(bracket);
             }
             else if (stack.peek() != BRACKET_MAP.get(bracket)) {
-                return VALUES_MAP.get(bracket);
+                partOneTotal += VALUES_MAP.get(bracket);
+                return;
             }
             // must be a valid closure
             else {
                 stack.pop();
             }
         }
-        return 0;
+        // line is not corrupted
+        long partTwoTotal = 0;
+        while(!stack.isEmpty()) {
+            partTwoTotal = partTwoTotal * 5 + PART_2_VALUES_MAP.get(stack.pop());
+        }
+        partTwoTotals.add(partTwoTotal);
     }
 
     private List<Character> convertToChars(String str) {
