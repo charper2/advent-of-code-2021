@@ -165,6 +165,9 @@ public class Utils {
         return clone;
     }
 
+    public static List<Integer> convertToInts(String str) {
+        return str.chars().mapToObj(c -> Character.getNumericValue((char)c)).collect(Collectors.toList());
+    }
     public static class Point {
         private int x;
         private int y;
